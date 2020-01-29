@@ -1,0 +1,317 @@
+#include <iostream>
+#include <fstream>
+#include <cstdlib>
+#include <string>
+#include <algorithm>
+#include <sstream>
+#include <vector>
+#include <cmath>
+#include <windows.h>
+#include <wchar.h>
+
+using namespace std;
+
+#define NSECS 60*60*72   // dodajemy 72 godziny (3 dni) do wartosci czasu lokalnego, 72 sa wyrazone w sekundach
+
+
+
+void Przywitanie()
+{
+
+    cout << "\n####################################################################################################\n";
+    cout << "\n------------- Oto program realizujacy projekt wypozyczalni filmow operujacy na pliku -------------- ";
+    cout << "\n----------------- Do obslugi programu wykorzystano jeden plik z rozszerzeniem txt -----------------";
+    cout << "\n----------- Projekt wykonali:  Sebastian Kowalak (nr:24486)  i   Jan Swiech (nr:24522) ------------\n";
+
+    cout << "\n####################################################################################################\n\n";
+    cout << "                   ++++++++++ WITAJ W NASZEJ WYPOZYCZALNI FILMOW ++++++++++";
+    cout << R"(
+                    _      ______ ____  _   _          _____  _____   ____
+                   | |    |  ____/ __ \| \ | |   /\   |  __ \|  __ \ / __ \
+                   | |    | |__ | |  | |  \| |  /  \  | |__) | |  | | |  | |
+                   | |    |  __|| |  | | . ` | / /\ \ |  _  /| |  | | |  | |
+                   | |____| |___| |__| | |\  |/ ____ \| | \ \| |__| | |__| |
+                   |______|______\____/|_| \_/_/    \_\_|  \_\_____/ \____/  )" << '\n';
+
+    cout << "\n     ++++++ ABY WYPOZYCZYC LUB ODDAC FILM POSTEPUJ ZGODNIE Z INSTRUKCJAMI PROGRAMU ++++++\n";
+    cout << "\n####################################################################################################\n";
+}
+
+int DataOddania()
+{
+    SYSTEMTIME st = { 0 };
+    FILETIME ft = { 0 };
+
+    GetLocalTime(&st);   // Przy uzyciu funkcji GetLocalTime() otrzymujemy aktualny czas lokalny
+    cout << "----------------------------------------| TERMIN ODDANIA FILMOW |---------------------------------- \n" << endl;
+    cout << "Dzisiejsza data to: ";
+    cout << st.wDay << "." << st.wMonth << "." << st.wYear << endl;
+    SystemTimeToFileTime(&st, &ft);   //Przywolujemy funkcje SystemTimeToFileTime() do konwersji  SYSTEMTIME structure na FILETIME structure.
+
+    ULARGE_INTEGER u = { 0 };   //tworzenie struktury The ULARGE_INTEGER
+
+    memcpy(&u, &ft, sizeof(u));
+    u.QuadPart += NSECS * 10000000LL;   // Dodajemy 72 godziny. Numer jest wyrazony w 100=nano sec. krokach dlatego mnozymy przez NSECS przez 10000000LLU.
+    memcpy(&ft, &u, sizeof(ft));
+
+    FileTimeToSystemTime(&ft, &st);   // Z powrotem przetwarzamy strukture FILETIME na SYSTEMTIME.
+
+
+
+    cout << "Filmy prosze oddac do dnia: ";
+    cout << st.wDay << "." << st.wMonth << "." << st.wYear << "\n" << endl;
+    cout << "\---------------------------------------------------------------------------------------------------" << endl;
+
+    return 0;
+}
+
+void DostepneFilmy()
+{
+    system("cls");  //czyszczenie konsoli w windows.
+    cout << "\n-----------------------------------------------| DOSTEPNE |--------------------------------------- \n \n" << endl;
+    string linia;
+    fstream plik;
+    plik.open("plik.txt", ios::in); //otwarcie pliku - moja sciezka
+    if (plik.good() == true) //jesli plik ok, leci dalej.
+    {
+        while (!plik.eof()) //w petli while przelatuje przez caly plik
+        {
+            getline(plik, linia, '\n');
+            replace(linia.begin(), linia.end(), ';', '\n'); // czytanie w pliku do kazdego ze srednikow.
+            vector<string> array;
+            stringstream ss(linia);
+            string temp;
+            while (ss >> temp) {
+                array.push_back(temp);
+            }
+            if (array[4] == "1") {
+                cout << " | Id: " + array[0] + " | Tytul: " + array[1] + " | Kategoria: " + array[2] + " | Rok produkcji: " + array[3] << endl;
+            }
+        }
+        plik.close();
+    }
+    cout << "\n---------------------------------------------------------------------------------------------------" << endl;
+}
+
+void NieDostepneFilmy()
+{
+    system("cls");  //czyszczenie konsoli w windows.
+    cout << "\n---------------------------------------------| WYPOZYCZONE |---------------------------------------- \n \n" << endl;
+    string linia;
+    fstream plik;
+    plik.open("plik.txt", ios::in);  //otwarcie pliku
+    if (plik.good() == true)  //jesli plik ok, leci dalej.
+    {
+        while (!plik.eof())  //w petli while przelatuje przez caly plik
+        {
+            getline(plik, linia, '\n');
+            replace(linia.begin(), linia.end(), ';', ' ');
+            vector<string> array;
+            stringstream ss(linia);
+            string temp;
+            while (ss >> temp) {
+                array.push_back(temp);
+            }
+            if (array[4] == "0") {
+                cout << " | Id: " + array[0] + " | Tytul: " + array[1] + " | Kategoria: " + array[2] + " | Rok produkcji: " + array[3] << endl;
+            }
+        }
+        plik.close();
+    }
+    cout << "\n---------------------------------------------------------------------------------------------------" << endl;
+}
+
+void Wypozycz()
+{
+    cout << ">>> Wpisz Id filmu ktory chcesz wypozyczyc tutaj: ";
+    string id;
+    cin >> id;
+
+    string linia;
+    fstream plik;
+    plik.open("plik.txt", ios::in);  //otwarcie pliku
+    if (plik.good() == true)  //jesli plik ok, leci dalej.
+    {
+        vector<string> linie;
+        while (!plik.eof())  //w petli while przelatuje przez caly plik
+        {
+            getline(plik, linia, '\n');   // czytanie z pliku linia po lini i wrzuca w wektor
+            linie.push_back(linia);
+        }
+        plik.close();
+
+        for (int i = 0; i < linie.size(); i++)
+        {
+            linia = linie[i];
+            replace(linia.begin(), linia.end(), ';', '\n');  // linie to wektor ktorego elementami sa stringi 
+            vector<string> array; // definicja zmiennej array - vector
+            stringstream ss(linia);  // ss jest strumieniem ktory zawiera linie
+            string temp;   // czytanie slow do pamieci tymczasowej temp, nastepnie wpisanie w wektor
+            while (ss >> temp) {  // ss >> temp czytanie pojedynczych slow
+                array.push_back(temp);  // odlozenie wartosci do zmiennej array (vector)
+            }
+            if (array[0] == id) {   //przyjecie 5 elementu jako statusu czy film jest wypozyczony czy nie 0/1
+                if (array[4] == "0")  // jesli film ma juz status 0 w pozycji [4] to wyswietla kominukat...
+                {
+                    cout << "\n!!! TEN FILM JEST JUZ WYPOZYCZONY !!!" << endl;  
+                }
+                else
+                {
+                    string result;  // odczytanie calej lini 
+                    result += array[0] + ";" + array[1] + ";" + array[2] + ";" + array[3] + ";0";  // wypozyczenie filmu zmienia wartosc [4] na 0
+                    linie[i] = result;
+                }
+            }
+        }
+
+        plik.open("plik.txt", ios::out | ios::trunc); //otwarcie pliku
+        if (plik.good() == true)
+        {
+            for (int i = 0; i < linie.size(); i++)
+            {
+                plik << linie[i];
+
+                if (i != linie.size() - 1) plik << "\n";
+            }
+        }
+        plik.close();
+    }
+}
+
+void Oddaj()
+{
+    cout << ">>> Wpisz Id filmu ktory chcesz oddac tutaj: ";
+    string id;
+    cin >> id;
+
+    string linia;
+    fstream plik;
+    plik.open("plik.txt", ios::in); //otwarcie pliku
+    if (plik.good() == true) //jesli plik ok, leci dalej.
+    {
+        vector<string> linie;
+        while (!plik.eof())  //w petli while przelatuje przez caly plik
+        {
+            getline(plik, linia, '\n');
+            linie.push_back(linia);
+        }
+        plik.close();
+
+        for (int i = 0; i < linie.size(); i++)
+        {
+            linia = linie[i];
+            replace(linia.begin(), linia.end(), ';', '\n');
+            vector<string> array;
+            stringstream ss(linia);
+            string temp;
+            while (ss >> temp) {
+                array.push_back(temp);
+            }
+            if (array[0] == id) {
+                if (array[4] == "1")
+                {
+                    cout << "\n!!! TEN FILM JEST JUZ ODDANY !!!" << endl;
+                }
+                else
+                {
+                    string result;
+                    result += array[0] + ";" + array[1] + ";" + array[2] + ";" + array[3] + ";1";
+                    linie[i] = result;
+                }
+            }
+        }
+
+        plik.open("plik.txt", ios::out | ios::trunc); //otwarcie pliku
+        if (plik.good() == true)
+        {
+            for (int i = 0; i < linie.size(); i++)
+            {
+                plik << linie[i];
+
+                if (i != linie.size() - 1) plik << "\n";
+            }
+        }
+        plik.close();
+    }
+}
+
+void ZawartoscMenu()
+{
+    cout << "---------------------------------------------| MENU GLOWNE |--------------------------------------- \n \n" << endl;
+    cout << "Wybierz odpowiednia pozycje z menu, aby przejsc dalej:" << endl
+        << endl << "1. Pokaz dostepne filmy."
+        << endl << "2. Pokaz wypozyczone filmy."
+        << endl << "3. Pokaz kategorie filmow."
+        << endl << "4. Wypozyczenie filmu."
+        << endl << "5. Zwrot filmu." << endl;
+    cout << "\n---------------------------------------------------------------------------------------------------" << endl;
+    cout << ">>> Podaj swoj wybor : ";
+}
+
+void Kategorie()
+{
+    system("cls");  //czyszczenie konsoli w windows.
+    cout << "\n-------------------------------------------| KATEGORIE FILMOWE |----------------------------------- \n \n";
+    cout << "\nW naszej wypozyczalni znajdziecie filmy z nastepujacych kategorii:" << endl;
+    cout << "Dramaty, Komedie, Science-Fiction, Filmy Akcji oraz Horrory\n" << endl;
+    cout << "\n---------------------------------------------------------------------------------------------------\n";
+}
+
+void Menu()
+{
+
+    string selectMenu;
+
+    ZawartoscMenu();
+    cin >> selectMenu;
+
+
+    if (selectMenu == "1")
+    {
+        cout << "\nOto lista dostepnych filmow: " << endl;
+        DostepneFilmy();
+        Menu();
+    }
+    else if (selectMenu == "2")
+    {
+        cout << "\nOto lista filmow wypozyczonych: " << endl;
+        NieDostepneFilmy();
+        DataOddania();
+        Menu();
+    }
+    else if (selectMenu == "3")
+    {
+        Kategorie();
+        Menu();
+    }
+    else if (selectMenu == "4")
+    {
+        cout << "\nOto lista dostepnych filmow: " << endl;
+        DostepneFilmy();
+        DataOddania();
+        Wypozycz();
+        Menu();
+    }
+    else if (selectMenu == "5")
+    {
+        cout << "\nOto lista filmow przez ciebie wypozyczonych: " << endl;
+        NieDostepneFilmy();
+        Oddaj();
+        Menu();
+    }
+    else
+    {
+        cout << "\nZly wybor! \n" << endl;
+        Menu();
+    }
+
+}
+
+
+int main(int argc, const char* argv[])
+{
+    Przywitanie();
+    Menu();
+
+    return 0;
+}

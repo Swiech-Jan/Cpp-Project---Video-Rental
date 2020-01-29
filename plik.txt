@@ -1,0 +1,20 @@
+1;Titanic;Dramat;2001;1
+2;The_Godfather;Dramat;1972;1
+3;A_QuietPlace;Dramat;2018;1
+4;Moonlight;Dramat;2016;1
+5;La_La_Land;Dramat;2016;1
+6;Matrix;Science-Fiction;2003;1
+7;Interstellar;Science-Fiction;2014;1
+8;The_Martian;Science-Fiction;2015;1
+9;Avatar;Science-Fiction;2009;1
+10;Terminator;Science-Fiction;2004;1
+11;Batman;Akcja;2005;1
+12;Spiderman;Akcja;2006;1
+13;Rambo;Akcja;2003;1
+14;Captain_America;Akcja;2011;1
+15;The_Avengers;Akcja;2012;1
+16;Scary_Movie;Komedia;2001;1
+17;Dumb_&_Dumber;Komedia;1995;1
+18;The_Naked Gun;Komedia;1988;1
+19;The_Big Lebowski;Komedia;1998;1
+20;Ghostbusters;Komedia;1984;1
